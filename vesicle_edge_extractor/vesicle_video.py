@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from vesicle_edge_extractor.edge_extractor import convert_to_cartesian
+from vesicle_edge_extractor.utils import convert_to_cartesian
 
 
 @dataclass
