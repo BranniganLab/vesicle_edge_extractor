@@ -6,16 +6,16 @@ Created on Wed Nov  5 10:42:28 2025
 @author: js2746
 """
 from dataclasses import dataclass, field
+from pathlib import Path
 import glob
 import nd2
 from scipy import ndimage
 import cv2
 from skimage import filters
-from pathlib import Path
+from skimage.measure import regionprops
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
-from skimage.measure import regionprops
 
 
 @dataclass
@@ -64,7 +64,7 @@ class VesicleVideo:
         """
         if not isinstance(self.frames, np.ndarray):
             raise TypeError("frames must be a numpy ndarray")
-        elif len(self.frames.shape) != 3:
+        if len(self.frames.shape) != 3:
             raise IndexError("frames must be a 3D array")
         self.vesicle_centers = [None] * self.frames.shape[0]
         self.r_vals = np.full((self.frames.shape[0], self.frames.shape[1]), np.nan)
@@ -94,7 +94,7 @@ class VesicleVideo:
         """
         if not isinstance(path, Path):
             path = Path(path).resolve()
-        if (trace and not (np.isnan(self.x_vals[0]).any())):
+        if (trace and not np.isnan(self.x_vals[0]).any()):
             raise ValueError("trace was set to True, but there are no edges detected for this vesicle.")
         output_path = path.with_suffix('.gif')
         fig, ax = plt.subplots()
@@ -310,7 +310,7 @@ def zero_out_all_but_lowest_n_modes(arr, n):
         arr = np.array(arr)
     if not isinstance(n, int):
         raise TypeError("n must be an int")
-    elif n < 0:
+    if n < 0:
         raise ValueError("n must be a positive integer")
     elif n >= arr.shape[0] // 2:
         raise IndexError(f"arr does not have enough modes ({arr.shape[0]}) to zero out all but the lowest {n}.")
@@ -412,7 +412,7 @@ def isolate_region_of_array(arr, mask_center, threshold, set_bg_to_nan=False):
     return masked_copy
 
 
-def extract_edge_JS_preferred(frame, debug_path=None):
+def extract_edge(frame, debug_path=None):
     # step 1: find internal vesicle point
     center_of_mass = approximate_vesicle_com(frame, debug_path=debug_path)
 
@@ -507,7 +507,7 @@ for file in glob.glob('/home/js2746/DOPC_TF/DOPC_C*/C*/11.5.25/*.nd2'):
 
     for frame_num, _ in enumerate(intensities):
         try:
-            r_vals, vesicle_center = extract_edge_JS_preferred(intensities[frame_num, :, :])
+            r_vals, vesicle_center = extract_edge(intensities[frame_num, :, :])
         except ValueError:
             r_vals = np.full_like(r_vals, np.nan)
             vesicle_center = (np.nan, np.nan)
