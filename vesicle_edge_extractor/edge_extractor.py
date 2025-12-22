@@ -84,9 +84,7 @@ def make_debug_image(frame, output_path):
     axes[1].imshow(polar_image, cmap='gray')
     axes[0].scatter(center_of_mass[1], center_of_mass[0], color='tab:red')
 
-    avg = np.mean(np.argmax(polar_image, axis=1))
-    masked_polar_image = isolate_region_of_array(polar_image, avg, 0.35)
-
+    masked_polar_image = isolate_region_of_array(polar_image, np.mean(np.argmax(polar_image, axis=1)), 0.35)
     max_of_masked_region = np.argmax(masked_polar_image, axis=1)
     axes[1].plot(max_of_masked_region, np.arange(0, max_of_masked_region.shape[0]))
 
@@ -96,15 +94,13 @@ def make_debug_image(frame, output_path):
 
     og_polar_image, _ = wrap_image_to_polar(frame, center_of_mass)
     horizontal_sobel = filters.sobel(og_polar_image, axis=1)
-    gauss_blur = ndimage.gaussian_filter(horizontal_sobel, sigma=2)
-    polar_image_masked = isolate_region_of_array(gauss_blur, ifft, 0.05, True)
-    axes[3].imshow(polar_image_masked, cmap='gray')
+    polar_image_masked_blurred = isolate_region_of_array(ndimage.gaussian_filter(horizontal_sobel, sigma=2), ifft, 0.05, True)
+    axes[3].imshow(polar_image_masked_blurred, cmap='gray')
 
-    max_sobel = np.nanargmax(polar_image_masked, axis=1)
+    max_sobel = np.nanargmax(polar_image_masked_blurred, axis=1)
     axes[3].plot(max_sobel, np.arange(0, horizontal_sobel.shape[0]), color='red')
 
-    r_vals = np.array(max_sobel) / scaling_factor
-    x_vals, y_vals = convert_to_cartesian((center_of_mass[1], center_of_mass[0]), r_vals)
+    x_vals, y_vals = convert_to_cartesian((center_of_mass[1], center_of_mass[0]), np.array(max_sobel) / scaling_factor)
     axes[0].plot(x_vals, y_vals, color='red', alpha=.5)
 
     axes[0].set_title("Raw image")
