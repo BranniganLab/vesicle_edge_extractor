@@ -209,7 +209,7 @@ def approximate_vesicle_com(frame, sigma=10, debug_path=None):
     greater_than_otsu_threshold = (blurred > filters.threshold_otsu(blurred)).astype(int)
     centroid = regionprops(greater_than_otsu_threshold, blurred)[0].centroid
     if debug_path is not None:
-        _make_debug_image_centroid(frame, sobel_filter, blurred, greater_than_otsu_threshold, centroid, debug_path)
+        _make_debug_image_centroid((frame, sobel_filter, blurred, greater_than_otsu_threshold, centroid), debug_path)
     return centroid
 
 
@@ -308,8 +308,10 @@ def zero_out_all_but_lowest_n_modes(arr, n):
     return ifft.real
 
 
-def _make_debug_image_centroid(original, sobel, blur, threshold, centroid, fpath):
+def _make_debug_image_centroid(input_tuple, fpath):
     """Make a 4-panel figure showing the steps in the centroid finding process."""
+    original, sobel, blur, threshold, centroid = input_tuple
+
     _, axes = plt.subplots(1, 4, figsize=(12, 4), layout='constrained')
 
     axes[0].imshow(original, cmap='gray')
