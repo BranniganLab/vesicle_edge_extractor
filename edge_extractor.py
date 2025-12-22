@@ -71,6 +71,50 @@ class VesicleVideo:
         self.x_vals = np.full((self.frames.shape[0], self.frames.shape[1]), np.nan)
         self.y_vals = np.full((self.frames.shape[0], self.frames.shape[1]), np.nan)
 
+    def extract_edges(self, extractor_func):
+        """
+        Extract edges from every frame.
+
+        Parameters
+        ----------
+        extractor_func : function
+            The edge extractor function you wish to use.
+
+        Returns
+        -------
+        None.
+
+        """
+        for frame_num, _ in enumerate(self.frames):
+            try:
+                r_vals, vesicle_center = extractor_func(intensities[frame_num, :, :])
+                self.add_edge_from_frame(r_vals, frame_num, vesicle_center)
+            except ValueError:
+                print(f"Error on frame {frame_num}")
+
+    def add_edge_from_frame(self, r_vals, frame_num, vesicle_center):
+        """
+        Save detected edge information for a given frame.
+
+        Parameters
+        ----------
+        r_vals : list or numpy ndarray
+            The list or 1D array of radial distances from the vesicle_center,
+            spaced evenly from 0 to 2pi.
+        frame_num : int
+            The frame number.
+        vesicle_center : tuple
+            The origin (in x, y) of the polar coordinate system.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.r_vals[frame_num] = r_vals
+        self.vesicle_centers[frame_num] = vesicle_center
+        self.x_vals[frame_num], self.y_vals[frame_num] = convert_to_cartesian((vesicle_center[1], vesicle_center[0],), r_vals)
+
     def make_vesicle_gif(self, path, trace=True):
         """
         Make a .gif of the vesicle, with or without the detected edges shown.
@@ -109,29 +153,6 @@ class VesicleVideo:
         ani = FuncAnimation(fig, animate, frames=self.frames.shape[0] - 1, interval=150, blit=False, repeat_delay=1000)
         ani.save(output_path)
         plt.close()
-
-    def add_edge_from_frame(self, r_vals, frame_num, vesicle_center):
-        """
-        Save detected edge information for a given frame.
-
-        Parameters
-        ----------
-        r_vals : list or numpy ndarray
-            The list or 1D array of radial distances from the vesicle_center,
-            spaced evenly from 0 to 2pi.
-        frame_num : int
-            The frame number.
-        vesicle_center : tuple
-            The origin (in x, y) of the polar coordinate system.
-
-        Returns
-        -------
-        None.
-
-        """
-        self.r_vals[frame_num] = r_vals
-        self.vesicle_centers[frame_num] = vesicle_center
-        self.x_vals[frame_num], self.y_vals[frame_num] = convert_to_cartesian((vesicle_center[1], vesicle_center[0],), r_vals)
 
 
 def convert_to_cartesian(center_point, r_vals):
@@ -312,7 +333,7 @@ def zero_out_all_but_lowest_n_modes(arr, n):
         raise TypeError("n must be an int")
     if n < 0:
         raise ValueError("n must be a positive integer")
-    elif n >= arr.shape[0] // 2:
+    if n >= arr.shape[0] // 2:
         raise IndexError(f"arr does not have enough modes ({arr.shape[0]}) to zero out all but the lowest {n}.")
     fft = np.fft.fft(arr)
     fft[n + 1:-1 * n] = 0
@@ -411,7 +432,7 @@ def isolate_region_of_array(arr, mask_center, threshold, set_bg_to_nan=False):
     return masked_copy
 
 
-def extract_edge(frame, debug_path=None):
+def extract_edge_from_frame(frame, debug_path=None):
     # step 1: find internal vesicle point
     center_of_mass = approximate_vesicle_com(frame, debug_path=debug_path)
 
