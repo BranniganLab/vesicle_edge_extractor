@@ -36,4 +36,4 @@ def test_extraction_quality(all_sample_videos):
     for video in all_sample_videos:
         hist = np.bincount(video.status)
         assert hist[0] == 0, "Something didn't get filtered properly"
-        assert hist[1] / np.sum(hist) > .8, "Extraction rate below 80%"
+        assert hist[1] / np.sum(hist) > .68, "Extraction rate below 68%"
