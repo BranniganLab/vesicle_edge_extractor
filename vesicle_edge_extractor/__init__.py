@@ -10,5 +10,5 @@ __credits__ = 'Rutgers University - Camden'
 __all__=['VesicleVideo',
         'edge_extractor']
 
-from .VesicleVideo import *
+from .vesicle_video import *
 from .edge_extractor import *
