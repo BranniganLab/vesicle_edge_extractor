@@ -153,7 +153,7 @@ def convert_to_cartesian(center_point, r_vals):
     """
     if not isinstance(r_vals, (list, np.ndarray)):
         raise TypeError("r_vals must be a list or 1D numpy array.")
-    elif isinstance(r_vals, np.ndarray):
+    if isinstance(r_vals, np.ndarray):
         if len(r_vals.shape) != 1:
             raise TypeError("r_vals cannot have more dimensions than 1.")
         num_r = r_vals.shape[0]
@@ -340,7 +340,6 @@ def _make_debug_image_centroid(original, sobel, blur, threshold, centroid, fpath
 
     plt.axis('off')
     plt.savefig(fpath.joinpath("centroid_process_debug.pdf"))
-    return
 
 
 def isolate_region_of_array(arr, mask_center, threshold, set_bg_to_nan=False):
@@ -511,7 +510,7 @@ for file in glob.glob('/home/js2746/DOPC_TF/DOPC_C*/C*/11.5.25/*.nd2'):
         except ValueError:
             r_vals = np.full_like(r_vals, np.nan)
             vesicle_center = (np.nan, np.nan)
-        ves_vid.add_r_val(r_vals, frame_num, vesicle_center)
+        ves_vid.add_edge_from_frame(r_vals, frame_num, vesicle_center)
 
     ves_vid.make_vesicle_gif(path, True)
     np.save(path.with_suffix(".npy"), ves_vid.r_vals)
