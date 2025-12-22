@@ -1,5 +1,2 @@
 [MAIN]
 disable=line-too-long
-
-[BASIC]
-class-naming-style=PascalCase
