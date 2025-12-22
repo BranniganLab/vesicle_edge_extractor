@@ -22,8 +22,7 @@ def extract_edge_from_frame(frame, debug_path=None):
     frame : numpy ndarray
         The 2D array of intensity values from a vesicle video frame.
     debug_path : pathlib Path, optional
-        If not None, output debug images to debug_path. The default is None. Not
-        implemented yet.
+        If not None, output debug images to debug_path. The default is None.
 
     Returns
     -------
@@ -34,9 +33,6 @@ def extract_edge_from_frame(frame, debug_path=None):
         The Cartesian coordinates of the approximate vesicle center.
 
     """
-    if debug_path is not None:
-        raise NotImplementedError("Debugging not implemented yet. Sorry!")
-
     # step 1: find internal vesicle point
     center_of_mass = approximate_vesicle_com(frame, debug_path=debug_path)
 
@@ -63,21 +59,32 @@ def extract_edge_from_frame(frame, debug_path=None):
     return r_vals, center_of_mass
 
 
-def make_test_image(intensities, frame_num):
-    frame = intensities[frame_num, :, :]
+def make_debug_image(frame, output_path):
+    """
+    Make a debug image that shows each step in the process.
+
+    Parameters
+    ----------
+    frame : numpy ndarray
+        The 2D array of intensity values from a vesicle video frame.
+    output_path : pathlib Path
+        Output debug images to output_path.
+
+    Returns
+    -------
+    None.
+
+    """
     _, axes = plt.subplots(1, 4, figsize=(12, 4), layout='constrained')
     plt.axis('off')
     axes[0].imshow(frame, cmap='gray')
 
-    sobel = filters.sobel(frame)
     center_of_mass = approximate_vesicle_com(frame)
-    polar_image, scaling_factor = wrap_image_to_polar(sobel, center_of_mass)
+    polar_image, scaling_factor = wrap_image_to_polar(filters.sobel(frame), center_of_mass)
     axes[1].imshow(polar_image, cmap='gray')
     axes[0].scatter(center_of_mass[1], center_of_mass[0], color='tab:red')
 
-    max_list = np.argmax(polar_image, axis=1)
-
-    avg = np.mean(max_list)
+    avg = np.mean(np.argmax(polar_image, axis=1))
     masked_polar_image = isolate_region_of_array(polar_image, avg, 0.35)
 
     max_of_masked_region = np.argmax(masked_polar_image, axis=1)
@@ -97,12 +104,8 @@ def make_test_image(intensities, frame_num):
     axes[3].plot(max_sobel, np.arange(0, horizontal_sobel.shape[0]), color='red')
 
     r_vals = np.array(max_sobel) / scaling_factor
-    com_rev = (center_of_mass[1], center_of_mass[0])
-    x_vals, y_vals = convert_to_cartesian(com_rev, r_vals)
+    x_vals, y_vals = convert_to_cartesian((center_of_mass[1], center_of_mass[0]), r_vals)
     axes[0].plot(x_vals, y_vals, color='red', alpha=.5)
-
-    new_com_x, new_com_y = np.mean(x_vals), np.mean(y_vals)
-    axes[0].scatter(new_com_x, new_com_y, color='tab:blue')
 
     axes[0].set_title("Raw image")
     axes[1].set_title("Sobel filter; polar")
@@ -114,7 +117,7 @@ def make_test_image(intensities, frame_num):
     axes[3].set_title("1D sobel of each row")
     axes[3].set_ylabel('theta (arbitrary units)')
     axes[3].set_xlabel('r')
-    plt.savefig("/home/js2746/Desktop/test_image5.pdf")
+    plt.savefig(output_path)
     plt.clf()
     plt.close()
 
