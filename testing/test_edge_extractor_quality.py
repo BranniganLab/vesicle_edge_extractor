@@ -32,8 +32,13 @@ def test_whether_edges_extracted(all_sample_videos):
         assert not np.isnan(video.x_vals).any(), "Some x_vals are nan"
 
 
-def test_extraction_quality(all_sample_videos):
+def test_filtering_success(all_sample_videos):
     for video in all_sample_videos:
         hist = np.bincount(video.status)
         assert hist[0] == 0, "Something didn't get filtered properly"
+
+
+def test_extraction_quality(all_sample_videos):
+    for video in all_sample_videos:
+        hist = np.bincount(video.status)
         assert hist[1] / np.sum(hist) > .67, "Extraction rate below 67%"
