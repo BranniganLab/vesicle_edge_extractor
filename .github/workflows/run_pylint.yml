@@ -28,4 +28,4 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         export PYLINTRC=./.github/workflows/.pylintrc
-        pylint $(find ./vesicle_edge_extractor -name '*.py') --fail-under=7
+        pylint $(find ./vesicle_edge_extractor -name '*.py')
