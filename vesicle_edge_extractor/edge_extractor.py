@@ -14,14 +14,35 @@ import numpy as np
 
 
 def extract_edge_from_frame(frame, debug_path=None):
+    """
+    Extract vesicle edge from frame of vesicle video.
+
+    Parameters
+    ----------
+    frame : numpy ndarray
+        The 2D array of intensity values from a vesicle video frame.
+    debug_path : pathlib Path, optional
+        If not None, output debug images to debug_path. The default is None. Not
+        implemented yet.
+
+    Returns
+    -------
+    r_vals : numpy ndarray
+        1D array of distances from center_of_mass to vesicle edge. Evenly spaced
+        in theta from 0 to 2pi.
+    center_of_mass : tuple
+        The Cartesian coordinates of the approximate vesicle center.
+
+    """
+    if debug_path is not None:
+        raise NotImplementedError("Debugging not implemented yet. Sorry!")
+
     # step 1: find internal vesicle point
     center_of_mass = approximate_vesicle_com(frame, debug_path=debug_path)
 
     # step 2: naive refinement of edge region
-    sobel = filters.sobel(frame)
-    polar_sobel, scaling_factor = wrap_image_to_polar(sobel, center_of_mass)
-    max_list = np.argmax(polar_sobel, axis=1)
-    avg = np.mean(max_list)
+    polar_sobel, scaling_factor = wrap_image_to_polar(filters.sobel(frame), center_of_mass)
+    avg = np.mean(np.argmax(polar_sobel, axis=1))
     vertically_masked_polar_sobel = isolate_region_of_array(polar_sobel, avg, 0.25)
     max_of_masked_region = np.argmax(vertically_masked_polar_sobel, axis=1)
 
