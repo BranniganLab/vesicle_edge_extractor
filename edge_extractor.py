@@ -20,14 +20,48 @@ from skimage.measure import regionprops
 
 @dataclass
 class VesicleVideo:
+    """
+    A class for vesicle videos.
+
+    Holds both the raw images of a vesicle video, as well as its computed edges.
+
+    Attributes
+    ----------
+        frames : numpy ndarray
+            The 3D array of raw images. 0th dimension is frame number.
+        vesicle_centers : list of tuples
+            List of len(frames.shape[0]) containing Cartesian coordinates of the
+            approximate vesicle center for each frame. Needed for wrapping images
+            to/from polar coordinates.
+        r_vals : numpy ndarray
+            The distance from vesicle_center on frame i to the edge of the vesicle
+            on frame i. Evenly spaced in theta, ranging from 0 to 2pi.
+        x_vals, y_vals : numpy ndarrays
+            The Cartesian coordinates of the vesicle edge.
+    """
+
     frames: np.ndarray
     vesicle_centers: list = field(init=False)
     r_vals: np.ndarray = field(init=False)
     x_vals: np.ndarray = field(init=False)
     y_vals: np.ndarray = field(init=False)
-    good_frames: np.ndarray= field(init=False)
 
     def __post_init__(self):
+        """
+        Do argument validation on frames. Initialize all else to None or nan.
+
+        Raises
+        ------
+        TypeError
+            If frames is not an ndarray.
+        IndexError
+            If frames is not a 3D ndarray.
+
+        Returns
+        -------
+        None.
+
+        """
         if not isinstance(self.frames, np.ndarray):
             raise TypeError("frames must be a numpy ndarray")
         elif len(self.frames.shape) != 3:
@@ -38,6 +72,30 @@ class VesicleVideo:
         self.y_vals = np.full((self.frames.shape[0], self.frames.shape[1]), np.nan)
 
     def make_vesicle_gif(self, path, trace=True):
+        """
+        Make a .gif of the vesicle, with or without the detected edges shown.
+
+        Parameters
+        ----------
+        path : pathlib Path
+            The location and filename to save this .gif to.
+        trace : Bool, optional
+            Whether or not to display the detected edges. The default is True.
+
+        Raises
+        ------
+        ValueError
+            If trace is True, but there are no edges saved.
+
+        Returns
+        -------
+        None.
+
+        """
+        if not isinstance(path, Path):
+            path = Path(path).resolve()
+        if (trace and not (np.isnan(self.x_vals[0]).any())):
+            raise ValueError("trace was set to True, but there are no edges detected for this vesicle.")
         output_path = path.with_suffix('.gif')
         fig, ax = plt.subplots()
 
@@ -52,7 +110,25 @@ class VesicleVideo:
         ani.save(output_path)
         plt.close()
 
-    def add_r_val(self, r_vals, frame_num, vesicle_center):
+    def add_edge_from_frame(self, r_vals, frame_num, vesicle_center):
+        """
+        Save detected edge information for a given frame.
+
+        Parameters
+        ----------
+        r_vals : numpy ndarray
+            The 1D array of radial distances from the vesicle_center, spaced
+            evenly from 0 to 2pi.
+        frame_num : int
+            The frame number.
+        vesicle_center : tuple
+            The origin (in x, y) of the polar coordinate system.
+
+        Returns
+        -------
+        None.
+
+        """
         self.r_vals[frame_num] = r_vals
         self.vesicle_centers[frame_num] = vesicle_center
         self.x_vals[frame_num], self.y_vals[frame_num] = convert_to_cartesian((vesicle_center[1], vesicle_center[0],), r_vals)
@@ -439,7 +515,3 @@ for file in glob.glob('/home/js2746/DOPC_TF/DOPC_C*/C*/11.5.25/*.nd2'):
 
     ves_vid.make_vesicle_gif(path, True)
     np.save(path.with_suffix(".npy"), ves_vid.r_vals)
-
-#path = Path(f'/home/js2746/DOPC_TF/ND Acquisition 7_crop.nd2')
-#intensities = nd2.imread(path)
-#make_test_image(intensities, 913)
