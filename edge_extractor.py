@@ -116,9 +116,9 @@ class VesicleVideo:
 
         Parameters
         ----------
-        r_vals : numpy ndarray
-            The 1D array of radial distances from the vesicle_center, spaced
-            evenly from 0 to 2pi.
+        r_vals : list or numpy ndarray
+            The list or 1D array of radial distances from the vesicle_center,
+            spaced evenly from 0 to 2pi.
         frame_num : int
             The frame number.
         vesicle_center : tuple
