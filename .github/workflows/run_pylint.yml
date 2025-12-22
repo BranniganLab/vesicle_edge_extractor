@@ -17,6 +17,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install nd2
+        pip install scipy
+        pip install opencv-python
+        pip install scikit-image
+        pip install numpy
+        pip install matplotlib
         pip install pylint
     - name: Analysing the code with pylint
       run: |
