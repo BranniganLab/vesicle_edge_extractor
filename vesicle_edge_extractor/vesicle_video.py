@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from vesicle_edge_extractor.utils import convert_to_cartesian
+from vesicle_edge_extractor.utils import convert_to_cartesian, measure_second_derivative
 
 
 @dataclass
@@ -33,6 +33,9 @@ class VesicleVideo:
             on frame i. Evenly spaced in theta, ranging from 0 to 2pi.
         x_vals, y_vals : numpy ndarrays
             The Cartesian coordinates of the vesicle edge.
+        status : list
+            List of ints containing status code for each frame. 1 = useable frame,
+            2 = error on edge extraction, 3 = unreliable edge extraction.
     """
 
     frames: np.ndarray
@@ -40,10 +43,11 @@ class VesicleVideo:
     r_vals: np.ndarray = field(init=False)
     x_vals: np.ndarray = field(init=False)
     y_vals: np.ndarray = field(init=False)
+    status: list = field(init=False)
 
     def __post_init__(self):
         """
-        Do argument validation on frames. Initialize all else to None or nan.
+        Do argument validation on frames. Initialize all else to None, nan, or 0.
 
         Raises
         ------
@@ -65,8 +69,9 @@ class VesicleVideo:
         self.r_vals = np.full((self.frames.shape[0], self.frames.shape[1]), np.nan)
         self.x_vals = np.full((self.frames.shape[0], self.frames.shape[1]), np.nan)
         self.y_vals = np.full((self.frames.shape[0], self.frames.shape[1]), np.nan)
+        self.status = np.zeros(self.frames.shape[0])
 
-    def extract_edges(self, extractor_func):
+    def extract_edges(self, extractor_func, curvature_threshold=10):
         """
         Extract edges from every frame.
 
@@ -74,6 +79,9 @@ class VesicleVideo:
         ----------
         extractor_func : function
             The edge extractor function you wish to use.
+        curvature_threshold : float, OPTIONAL
+            The level of curvature allowed between two contiguous r_vals before
+            edge extraction would be deemed unreliable. Default is 10.
 
         Returns
         -------
@@ -83,11 +91,12 @@ class VesicleVideo:
         for frame_num, _ in enumerate(self.frames):
             try:
                 r_vals, vesicle_center = extractor_func(self.frames[frame_num, :, :])
-                self.add_edge_from_frame(r_vals, frame_num, vesicle_center)
+                self.add_edge_from_frame(r_vals, frame_num, vesicle_center, curvature_threshold)
             except ValueError:
                 print(f"Error on frame {frame_num}")
+                self.status[frame_num] = 2
 
-    def add_edge_from_frame(self, r_vals, frame_num, vesicle_center):
+    def add_edge_from_frame(self, r_vals, frame_num, vesicle_center, curvature_threshold):
         """
         Save detected edge information for a given frame.
 
@@ -100,6 +109,9 @@ class VesicleVideo:
             The frame number.
         vesicle_center : tuple
             The origin (in x, y) of the polar coordinate system.
+        curvature_threshold : float
+            The level of curvature allowed between two contiguous r_vals before
+            edge extraction would be deemed unreliable.
 
         Returns
         -------
@@ -109,6 +121,10 @@ class VesicleVideo:
         self.r_vals[frame_num] = r_vals
         self.vesicle_centers[frame_num] = vesicle_center
         self.x_vals[frame_num], self.y_vals[frame_num] = convert_to_cartesian((vesicle_center[1], vesicle_center[0],), r_vals)
+        if (measure_second_derivative(r_vals) > curvature_threshold).any():
+            self.status[frame_num] = 3
+        else:
+            self.status[frame_num] = 1
 
     def make_vesicle_gif(self, path, trace=True):
         """

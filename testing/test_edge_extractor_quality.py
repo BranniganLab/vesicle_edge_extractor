@@ -30,3 +30,11 @@ def test_whether_files_all_saved(all_sample_videos):
 def test_whether_edges_extracted(all_sample_videos):
     for video in all_sample_videos:
         assert not np.isnan(video.x_vals).any(), "Some x_vals are nan"
+
+
+def test_extraction_quality(all_sample_videos):
+    for video in all_sample_videos:
+        hist = np.bincount(video.status)
+        _, useable, errors, bad_extraction = hist
+        assert np.sum(hist) == useable + errors + bad_extraction, "Something didn't get filtered properly"
+        assert useable / np.sum(hist) > .8, "Extraction rate below 80%"

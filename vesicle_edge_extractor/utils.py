@@ -201,3 +201,23 @@ def isolate_region_of_array(arr, mask_center, threshold, set_bg_to_nan=False):
         raise TypeError("mask_center must be a scalar, list, or numpy ndarray.")
 
     return masked_copy
+
+
+def measure_second_derivative(arr):
+    """
+    Wrap the array and measure its second derivative.
+
+    Parameters
+    ----------
+    arr : numpy ndarray
+        1D array that you wish to take the second derivative of.
+
+    Returns
+    -------
+    second_deriv : numpy ndarray
+        The second derivative (curvature) of the input array.
+
+    """
+    wrapped_array = np.pad(arr, pad_width=2, mode='wrap')
+    second_deriv = np.diff(wrapped_array, n=2)[1: -1]
+    return second_deriv
