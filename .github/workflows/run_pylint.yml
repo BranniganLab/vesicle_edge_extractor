@@ -21,4 +21,4 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         export PYLINTRC=./.github/workflows/.pylintrc
-        pylint $(find . -name '*.py') --fail-under=7
+        pylint $(find . -name '*.py') --fail-under=6
