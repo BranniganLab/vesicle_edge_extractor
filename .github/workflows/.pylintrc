@@ -1,3 +1,6 @@
+[MAIN]
+disable=line-too-long
+
 [BASIC]
 # A regular expression matching valid class names.
 # The default is: [A-Z_][a-zA-Z0-9]+$
