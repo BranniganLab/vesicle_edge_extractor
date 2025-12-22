@@ -44,7 +44,7 @@ def extract_edge_from_frame(frame, debug_path=None):
 
 def make_test_image(intensities, frame_num):
     frame = intensities[frame_num, :, :]
-    fig, axes = plt.subplots(1, 4, figsize=(12, 4), layout='constrained')
+    _, axes = plt.subplots(1, 4, figsize=(12, 4), layout='constrained')
     plt.axis('off')
     axes[0].imshow(frame, cmap='gray')
 
@@ -211,7 +211,7 @@ def _approximate_vesicle_com_contrast_only(frame, threshold=.1, debug_path=None)
     """
     maxval_threshold = (frame > np.amax(frame) - np.amax(frame) * threshold).astype(int)
     centroid = regionprops(maxval_threshold, frame)[0].centroid
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
     ax.imshow(maxval_threshold, cmap='jet')
     ax.scatter(centroid[1], centroid[0])
     if debug_path:
@@ -286,7 +286,7 @@ def zero_out_all_but_lowest_n_modes(arr, n):
 
 def _make_debug_image_centroid(original, sobel, blur, threshold, centroid, fpath):
     """Make a 4-panel figure showing the steps in the centroid finding process."""
-    fig, axes = plt.subplots(1, 4, figsize=(12, 4), layout='constrained')
+    _, axes = plt.subplots(1, 4, figsize=(12, 4), layout='constrained')
 
     axes[0].imshow(original, cmap='gray')
     axes[0].set_title('Raw image')
