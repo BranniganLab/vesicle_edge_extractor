@@ -7,11 +7,10 @@ Created on Wed Nov  5 10:42:28 2025.
 """
 from dataclasses import dataclass, field
 from pathlib import Path
-import glob
-import nd2
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from vesicle_edge_extractor.edge_extractor import convert_to_cartesian
 
 
 @dataclass
@@ -83,7 +82,7 @@ class VesicleVideo:
         """
         for frame_num, _ in enumerate(self.frames):
             try:
-                r_vals, vesicle_center = extractor_func(intensities[frame_num, :, :])
+                r_vals, vesicle_center = extractor_func(self.frames[frame_num, :, :])
                 self.add_edge_from_frame(r_vals, frame_num, vesicle_center)
             except ValueError:
                 print(f"Error on frame {frame_num}")
@@ -149,23 +148,3 @@ class VesicleVideo:
         ani = FuncAnimation(fig, animate, frames=self.frames.shape[0] - 1, interval=150, blit=False, repeat_delay=1000)
         ani.save(output_path)
         plt.close()
-
-
-for file in glob.glob('/home/js2746/DOPC_TF/DOPC_C*/C*/11.5.25/*.nd2'):
-    path = Path(file)
-    print(f"working on file {path.stem}")
-    if path.with_suffix(".npy").exists():
-        continue
-    intensities = nd2.imread(path)
-    ves_vid = VesicleVideo(intensities)
-
-    for frame_num, _ in enumerate(intensities):
-        try:
-            r_vals, vesicle_center = extract_edge(intensities[frame_num, :, :])
-        except ValueError:
-            r_vals = np.full_like(r_vals, np.nan)
-            vesicle_center = (np.nan, np.nan)
-        ves_vid.add_edge_from_frame(r_vals, frame_num, vesicle_center)
-
-    ves_vid.make_vesicle_gif(path, True)
-    np.save(path.with_suffix(".npy"), ves_vid.r_vals)
