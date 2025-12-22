@@ -27,5 +27,4 @@ jobs:
         pip install .
     - name: Analysing the code with pylint
       run: |
-        export PYLINTRC=./.github/workflows/.pylintrc
-        pylint $(find . -name '*.py') --fail-under=6
+        pylint $(find ./vesicle_edge_extractor -name '*.py') --fail-under=7
