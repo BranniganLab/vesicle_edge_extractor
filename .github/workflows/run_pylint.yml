@@ -24,7 +24,6 @@ jobs:
         pip install numpy
         pip install matplotlib
         pip install pylint
-        cd vesicle_edge_extractor
         pip install .
     - name: Analysing the code with pylint
       run: |
