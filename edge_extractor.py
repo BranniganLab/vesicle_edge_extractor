@@ -402,9 +402,9 @@ def isolate_region_of_array(arr, mask_center, threshold, set_bg_to_nan=False):
             mask_center = np.array(mask_center)
         if mask_center.shape[0] != arr.shape[0]:
             raise IndexError("arr and mask_center must be same size in 0th dimension")
-        for index, _ in enumerate(mask_center):
-            lower_bound = int(mask_center[index] - mask_center[index] * threshold)
-            upper_bound = int(mask_center[index] + mask_center[index] * threshold) + 1
+        for index, center_value in enumerate(mask_center):
+            lower_bound = int(center_value - center_value * threshold)
+            upper_bound = int(center_value + center_value * threshold) + 1
             masked_copy[index, lower_bound:upper_bound] = arr[index, lower_bound:upper_bound]
     else:
         raise TypeError("mask_center must be a scalar, list, or numpy ndarray.")
