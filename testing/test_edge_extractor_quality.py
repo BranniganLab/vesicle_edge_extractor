@@ -16,7 +16,7 @@ from vesicle_edge_extractor.edge_extractor import extract_edge_from_frame
 @pytest.fixture(scope='module')
 def all_sample_videos():
     video_list = []
-    for file in glob.glob('./sample_vesicle_videos/*.npy'):
+    for file in glob.glob('./testing/sample_vesicle_videos/*.npy'):
         video = VesicleVideo(np.load(file))
         video.extract_edges(extract_edge_from_frame)
         video_list.append(video)
