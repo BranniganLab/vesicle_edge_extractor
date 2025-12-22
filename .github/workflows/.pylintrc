@@ -1,3 +1,2 @@
 [MAIN]
-disable=line-too-long
-extension-pkg-allow-list=cv2,skimage
+disable=line-too-long,no-name-in-module,no-member
