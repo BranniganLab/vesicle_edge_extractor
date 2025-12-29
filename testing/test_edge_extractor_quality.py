@@ -22,7 +22,7 @@ def sample_videos(request):
     Load and process all files in test_data directory once per test session.
     Returns a dict mapping filename -> processed content.
     """
-    test_file_dir = Path(request.node.fspath).parent / "sample_vesicle_videos"
+    test_file_dir = Path(request.node.fspath).parent / "testing" / "sample_vesicle_videos"
 
     # Defensive: fail loudly if directory does not exist
     if not test_file_dir.exists():
