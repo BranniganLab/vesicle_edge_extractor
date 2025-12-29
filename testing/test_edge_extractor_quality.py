@@ -13,7 +13,7 @@ import numpy as np
 from vesicle_edge_extractor.vesicle_video import VesicleVideo
 from vesicle_edge_extractor.edge_extractor import extract_edge_from_frame
 
-@pytest.fixture(scope='module')
+
 def load_all_sample_videos():
     video_list = []
     name_list = []
