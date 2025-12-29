@@ -15,7 +15,7 @@ from vesicle_edge_extractor.edge_extractor import extract_edge_from_frame
 
 @pytest.fixture(scope="session")
 def sample_videos():
-    test_dir = Path(__file__)
+    test_dir = Path(__file__).parent
     video_list = {}
     for path in test_dir.iterdir():
         if path.suffix == '.npy':
@@ -28,7 +28,7 @@ def sample_videos():
 def pytest_generate_tests(metafunc):
     if "filename" not in metafunc.fixturenames:
         return
-    test_dir = Path(metafunc.definition.fspath)
+    test_dir = Path(metafunc.definition.fspath).parent
     filenames = sorted(p.name for p in test_dir.iterdir() if p.suffix=='.npy')
     metafunc.parametrize("filename", filenames, ids=filenames)
 
