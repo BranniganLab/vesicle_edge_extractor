@@ -13,26 +13,57 @@ from vesicle_edge_extractor.vesicle_video import VesicleVideo
 from vesicle_edge_extractor.edge_extractor import extract_edge_from_frame
 
 
+# ----------------------------
+# Fixture: Expensive processing
+# ----------------------------
 @pytest.fixture(scope="session")
-def sample_videos():
-    test_dir = Path(__file__).parent
+def sample_videos(request):
+    """
+    Load and process all files in test_data directory once per test session.
+    Returns a dict mapping filename -> processed content.
+    """
+    test_file_dir = Path(request.node.fspath).parent / "sample_vesicle_videos"
+
+    # Defensive: fail loudly if directory does not exist
+    if not test_file_dir.exists():
+        pytest.fail(f"Test data directory does not exist: {test_file_dir}")
+
     video_list = {}
-    for path in test_dir.iterdir():
+    for path in test_file_dir.iterdir():
         if path.suffix == '.npy':
             video = VesicleVideo(np.load(path))
             video.extract_edges(extract_edge_from_frame)
             video_list[path.name] = video
+
+    if not video_list:
+        pytest.fail(f"No files found in test directory: {test_file_dir}")
+
     return video_list
 
-
+# ----------------------------------------
+# Hook: Parameterize one test per data file
+# ----------------------------------------
 def pytest_generate_tests(metafunc):
+    """
+    Dynamically parameterize the test function with filenames.
+    Only affects tests that request 'filename'.
+    """
     if "filename" not in metafunc.fixturenames:
         return
-    test_dir = Path(metafunc.definition.fspath).parent
-    filenames = sorted(p.name for p in test_dir.iterdir() if p.suffix=='.npy')
+
+    test_file_dir = Path(metafunc.definition.fspath).parent / "sample_vesicle_videos"
+
+    filenames = sorted(p.name for p in test_file_dir.iterdir() if p.suffix=='.npy')
+
+    if not filenames:
+        pytest.fail(f"No files found to parameterize test: {test_file_dir}")
+
     metafunc.parametrize("filename", filenames, ids=filenames)
 
 
+# ----------------------------
+# Actual tests
+# ----------------------------
 def test_whether_edges_extracted(filename, sample_videos):
     video = sample_videos[filename]
     assert not np.isnan(video.x_vals).any(), f"Some x_vals are nan in {filename}"
