@@ -17,12 +17,12 @@ from vesicle_edge_extractor.edge_extractor import extract_edge_from_frame
 # Fixture: Expensive processing
 # ----------------------------
 @pytest.fixture(scope="session")
-def sample_videos(request):
+def sample_videos():
     """
     Load and process all files in test_data directory once per test session.
     Returns a dict mapping filename -> processed content.
     """
-    test_file_dir = Path(request.node.fspath).parent / "testing" / "sample_vesicle_videos"
+    test_file_dir = Path(__file__).parent / "sample_vesicle_videos"
 
     # Defensive: fail loudly if directory does not exist
     if not test_file_dir.exists():
