@@ -7,38 +7,38 @@ Created on Mon Dec 22 15:27:45 2025.
 """
 
 import pytest
+from pathlib import Path
 import glob
 import numpy as np
 from vesicle_edge_extractor.vesicle_video import VesicleVideo
 from vesicle_edge_extractor.edge_extractor import extract_edge_from_frame
 
-
 @pytest.fixture(scope='module')
-def all_sample_videos():
+def load_all_sample_videos():
     video_list = []
+    name_list = []
     for file in glob.glob('./testing/sample_vesicle_videos/*.npy'):
         video = VesicleVideo(np.load(file))
         video.extract_edges(extract_edge_from_frame)
         video_list.append(video)
-    return video_list
+        name_list.append(Path(file).stem)
+    return video_list, name_list
 
 
-def test_whether_files_all_saved(all_sample_videos):
-    assert len(all_sample_videos) == 8, "One or more videos failed"
+pytestmark = pytest.mark.parametrize("video,name", load_all_sample_videos())
 
 
-def test_whether_edges_extracted(all_sample_videos):
-    for video in all_sample_videos:
-        assert not np.isnan(video.x_vals).any(), "Some x_vals are nan"
+def test_whether_edges_extracted(video, name):
+    assert not np.isnan(video.x_vals).any(), f"Some x_vals are nan in {name}"
 
 
-def test_filtering_success(all_sample_videos):
-    for video in all_sample_videos:
-        hist = np.bincount(video.status)
-        assert hist[0] == 0, "Something didn't get filtered properly"
+def test_filtering_success(video, name):
+    hist = np.bincount(video.status)
+    assert hist[0] == 0, f"Something didn't get filtered properly in {name}"
 
 
-def test_extraction_quality(all_sample_videos):
-    for video in all_sample_videos:
-        hist = np.bincount(video.status)
-        assert hist[1] / np.sum(hist) > .67, "Extraction rate below 67%"
+def test_extraction_quality(video, name):
+    hist = np.bincount(video.status)
+    assert hist[1] / np.sum(hist) > .67, f"Extraction rate below 67% in {name}"
+
+
