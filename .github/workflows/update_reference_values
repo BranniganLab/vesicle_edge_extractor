@@ -1,0 +1,55 @@
+name: Update Reference Values
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-references:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create new branch
+        run: |
+          BRANCH_NAME="update-reference-$(date +%Y%m%d%H%M%S)"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          git checkout -b $BRANCH_NAME
+
+      - name: Update reference files
+        run: pytest --update-reference
+
+      - name: Commit changes if any
+        run: |
+          git add testing/reference_values/
+          if ! git diff --cached --quiet; then
+            git commit -m "Update reference files"
+            git push origin $BRANCH_NAME
+          else
+            echo "No changes to commit"
+            exit 0
+          fi
+
+      - name: Create Pull Request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "Update reference values" \
+            --body "Automated update of reference values." \
+            --base main \
+            --head $BRANCH_NAME
