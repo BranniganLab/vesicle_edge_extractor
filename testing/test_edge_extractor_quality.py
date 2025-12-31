@@ -41,10 +41,10 @@ def sample_videos():
     return video_list
 
 
-# ------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Hook: Make each test run once for each file by using filename as a
-# parametrized variable. DO NOT RENAME.
-# ------------------------------------------------------------------
+# parametrized variable. DO NOT RENAME THIS FUNCTION OR ITS ARGUMENT!
+# -------------------------------------------------------------------
 def pytest_generate_tests(metafunc):
     """
     Dynamically parameterize the test function with filenames.
