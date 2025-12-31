@@ -8,6 +8,7 @@ Created on Mon Dec 22 15:27:45 2025.
 
 import pytest
 from pathlib import Path
+import json
 import numpy as np
 from vesicle_edge_extractor.vesicle_video import VesicleVideo
 from vesicle_edge_extractor.edge_extractor import extract_edge_from_frame
@@ -67,11 +68,19 @@ def pytest_generate_tests(metafunc):
 # Actual tests
 # ----------------------------
 def test_whether_edges_extracted(filename, sample_videos):
+    """
+    If edge extraction failed, some frame(s) would contain NaN values.
+    Check for that.
+    """
     video = sample_videos[filename]
     assert not np.isnan(video.x_vals).any(), f"Some x_vals are nan in {filename}"
 
 
 def test_filtering_success(filename, sample_videos):
+    """
+    If something went wrong in the filtering step, some frame(s) would have a
+    status of 0 (as opposed to 1, 2, or 3). Check for that.
+    """
     video = sample_videos[filename]
     hist = np.bincount(video.status)
     assert hist[0] == 0, f"Something didn't get filtered properly in {filename}"
@@ -80,6 +89,12 @@ def test_filtering_success(filename, sample_videos):
 def test_extraction_quality(filename, sample_videos):
     video = sample_videos[filename]
     hist = np.bincount(video.status)
-    assert hist[1] / np.sum(hist) > .67, f"Extraction rate below 67% in {filename}"
+    percent_useable_frames = hist[1] / np.sum(hist)
+    
+    expected_value_file = Path(__file__).parent / f"expected_value_{filename.suffix('.json'))}"
+    if not expected_value_file.exists(file=True):
+        pytest.skip(f"No reference data to compare against for file {filename}")
+    
+    assert percent_useable_frames > .67, f"Extraction rate below 67% in {filename}"
 
 
