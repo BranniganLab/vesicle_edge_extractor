@@ -92,7 +92,7 @@ def test_extraction_quality(filename, sample_videos):
     hist = np.bincount(video.status)
     meas_pct_usbl_frames = hist[1] / np.sum(hist)
     
-    expected_value_file = Path(__file__).parent / f"expected_value_{filename}.json"
+    expected_value_file = Path(__file__).parent / "reference_values" /  f"expected_value_{filename}.json"
     if not expected_value_file.is_file():
         pytest.skip(f"No reference data to compare against for file {filename}")
 
