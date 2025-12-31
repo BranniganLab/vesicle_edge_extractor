@@ -92,7 +92,7 @@ def test_extraction_quality(filename, sample_videos):
     percent_useable_frames = hist[1] / np.sum(hist)
     
     expected_value_file = Path(__file__).parent / f"expected_value_{filename}.json"
-    if not expected_value_file.exists(file=True):
+    if not expected_value_file.is_file():
         pytest.skip(f"No reference data to compare against for file {filename}")
     
     assert percent_useable_frames > .67, f"Extraction rate below 67% in {filename}"
