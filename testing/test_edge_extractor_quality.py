@@ -13,9 +13,9 @@ from vesicle_edge_extractor.vesicle_video import VesicleVideo
 from vesicle_edge_extractor.edge_extractor import extract_edge_from_frame
 
 
-# ----------------------------
-# Fixture: Expensive processing
-# ----------------------------
+# ----------------------------------------------------------
+# Fixture: Expensive processing of all videos only done once
+# ----------------------------------------------------------
 @pytest.fixture(scope="session")
 def sample_videos():
     """
@@ -40,9 +40,11 @@ def sample_videos():
 
     return video_list
 
-# ----------------------------------------
-# Hook: Parameterize one test per data file
-# ----------------------------------------
+
+# ------------------------------------------------------------------
+# Hook: Make each test run once for each file by using filename as a
+# parametrized variable. DO NOT RENAME.
+# ------------------------------------------------------------------
 def pytest_generate_tests(metafunc):
     """
     Dynamically parameterize the test function with filenames.
