@@ -7,6 +7,7 @@ Created on Mon Dec 22 15:27:45 2025.
 """
 
 import pytest
+import math
 from pathlib import Path
 import json
 import numpy as np
@@ -89,12 +90,21 @@ def test_filtering_success(filename, sample_videos):
 def test_extraction_quality(filename, sample_videos):
     video = sample_videos[filename]
     hist = np.bincount(video.status)
-    percent_useable_frames = hist[1] / np.sum(hist)
+    meas_pct_usbl_frames = hist[1] / np.sum(hist)
     
     expected_value_file = Path(__file__).parent / f"expected_value_{filename}.json"
     if not expected_value_file.is_file():
         pytest.skip(f"No reference data to compare against for file {filename}")
-    
-    assert percent_useable_frames > .67, f"Extraction rate below 67% in {filename}"
+
+    with open(expected_value_file) as f:
+        saved_data = json.load(f)
+
+    exp_pct_usbl_frames = saved_data["expected pct useable value"]
+
+    assert math.is_close(
+        meas_pct_usbl_frames, exp_pct_usbl_frames, 0.01
+    ), (
+        f"Extraction rate does not match reference value for {filename}"
+    )
 
 
