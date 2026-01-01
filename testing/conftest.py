@@ -24,5 +24,5 @@ def pytest_collection_modifyitems(config, items):
     )
 
     for item in items:
-        if "testing/test_edge_extractor_quality.py::test_extraction_quality" not in item.nodeid:
+        if "test_extraction_quality" not in item.nodeid:
             item.add_marker(skip_marker)
