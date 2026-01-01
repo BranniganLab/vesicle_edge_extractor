@@ -51,7 +51,7 @@ jobs:
           git push origin $BRANCH_NAME
         else
           echo "No changes to commit"
-          exit 0
+          exit 1
         fi
 
     - name: Create Pull Request
