@@ -49,6 +49,8 @@ def pytest_collection_modifyitems(config, items):
     update = config.getoption("--update-ref-values")
     if not update:
         return
+    else:
+        pytest.fail("just checking to make sure this thing is on")
     
     skip_marker = pytest.mark.skip(
         reason = "Skipped because --update-ref-vales is True"
