@@ -48,7 +48,7 @@ def pytest_collection_modifyitems(config, items):
     """
     update = config.getoption("--update-ref-values")
     if not update:
-        return
+        pytest.exit("now you should def fail", returncode=1)
     else:
         pytest.exit("just checking to make sure this thing is on", returncode=1)
     
