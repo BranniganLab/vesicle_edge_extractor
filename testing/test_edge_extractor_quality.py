@@ -15,6 +15,54 @@ from vesicle_edge_extractor.vesicle_video import VesicleVideo
 from vesicle_edge_extractor.edge_extractor import extract_edge_from_frame
 
 
+# --------------------------------------------------------------------
+# Hook 1: Make each test run once for each file by using filename as a
+# parametrized variable. DO NOT RENAME THIS FUNCTION OR ITS ARGUMENT!
+# --------------------------------------------------------------------
+def pytest_generate_tests(metafunc):
+    """
+    Dynamically parameterize the test function with filenames.
+    Only affects tests that request 'filename'.
+    """
+    if "filename" not in metafunc.fixturenames:
+        return
+
+    test_file_dir = Path(metafunc.definition.fspath).parent / "sample_vesicle_videos"
+
+    filenames = sorted(p.name for p in test_file_dir.iterdir() if p.suffix=='.npy')
+
+    if not filenames:
+        pytest.fail(f"No files found to parameterize test: {test_file_dir}")
+
+    metafunc.parametrize("filename", filenames, ids=filenames)
+
+
+# --------------------------------------------------------------------
+# Hook 2: If you're updating the reference values, skip all tests
+# except those needed. DO NOT RENAME THIS FUNCTION OR ITS ARGUMENTS!
+# --------------------------------------------------------------------
+def pytest_collection_modifyitems(config, items):
+    """
+    If --update-ref-values flag supplied to pytest, skip everything except the
+    fixture and test you need to update the reference values.
+    """
+    update = config.getoption("--update-ref-values")
+    if not update:
+        return
+    
+    skip_marker = pytest.mark.skip(
+        reason = "Skipped because --update-ref-vales is True"
+    )
+
+    for item in items:
+        if item.nodeid not in [
+            "testing/test_edge_extractor_quality.py::sample_videos",
+            "testing/test_edge_extractor_quality.py::test_extraction_quality",
+        ]:
+            item.add_marker(skip_marker)
+    return
+
+
 # ----------------------------------------------------------
 # Fixture: Expensive processing of all videos only done once
 # ----------------------------------------------------------
@@ -41,28 +89,6 @@ def sample_videos():
         pytest.fail(f"No files found in test directory: {test_file_dir}")
 
     return video_list
-
-
-# -------------------------------------------------------------------
-# Hook: Make each test run once for each file by using filename as a
-# parametrized variable. DO NOT RENAME THIS FUNCTION OR ITS ARGUMENT!
-# -------------------------------------------------------------------
-def pytest_generate_tests(metafunc):
-    """
-    Dynamically parameterize the test function with filenames.
-    Only affects tests that request 'filename'.
-    """
-    if "filename" not in metafunc.fixturenames:
-        return
-
-    test_file_dir = Path(metafunc.definition.fspath).parent / "sample_vesicle_videos"
-
-    filenames = sorted(p.name for p in test_file_dir.iterdir() if p.suffix=='.npy')
-
-    if not filenames:
-        pytest.fail(f"No files found to parameterize test: {test_file_dir}")
-
-    metafunc.parametrize("filename", filenames, ids=filenames)
 
 
 # ----------------------------
