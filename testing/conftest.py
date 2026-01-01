@@ -24,8 +24,5 @@ def pytest_collection_modifyitems(config, items):
     )
 
     for item in items:
-        if item.nodeid not in [
-            "testing/test_edge_extractor_quality.py::sample_videos",
-            "testing/test_edge_extractor_quality.py::test_extraction_quality",
-        ]:
+        if "testing/test_edge_extractor_quality.py::test_extraction_quality" not in item.nodeid:
             item.add_marker(skip_marker)
