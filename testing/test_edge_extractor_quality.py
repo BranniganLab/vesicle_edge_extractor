@@ -57,7 +57,7 @@ def sample_videos():
         if path.suffix == '.npy':
             video = VesicleVideo(np.load(path))
             video.extract_edges(extract_edge_from_frame)
-            video_list[path.name] = video
+            video_list[path.stem] = video
 
     if not video_list:
         pytest.fail(f"No files found in test directory: {test_file_dir}")
