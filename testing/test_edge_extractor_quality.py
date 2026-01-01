@@ -107,8 +107,8 @@ def test_extraction_quality(request, filename, sample_videos):
     
         exp_pct_usbl_frames = saved_data[key]
     
-        assert math.is_close(
-            meas_pct_usbl_frames, exp_pct_usbl_frames, 0.01
+        assert math.isclose(
+            meas_pct_usbl_frames, exp_pct_usbl_frames, abs_tol=0.01
         ), (
             f"Extraction rate does not match reference value for {filename}"
         )
