@@ -32,7 +32,7 @@ def pytest_generate_tests(metafunc):
     filenames = sorted(p.name for p in test_file_dir.iterdir() if p.suffix=='.npy')
 
     if not filenames:
-        pytest.fail(f"No files found to parameterize test: {test_file_dir}")
+        pytest.exit(f"No files found to parameterize test: {test_file_dir}", returncode=1)
 
     metafunc.parametrize("filename", filenames, ids=filenames)
 
@@ -50,7 +50,7 @@ def pytest_collection_modifyitems(config, items):
     if not update:
         return
     else:
-        pytest.fail("just checking to make sure this thing is on")
+        pytest.exit("just checking to make sure this thing is on", returncode=1)
     
     skip_marker = pytest.mark.skip(
         reason = "Skipped because --update-ref-vales is True"
