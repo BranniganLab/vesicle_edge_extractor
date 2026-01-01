@@ -29,7 +29,7 @@ def pytest_generate_tests(metafunc):
 
     test_file_dir = Path(metafunc.definition.fspath).parent / "sample_vesicle_videos"
 
-    filenames = sorted(p.name for p in test_file_dir.iterdir() if p.suffix=='.npy')
+    filenames = sorted(p.stem for p in test_file_dir.iterdir() if p.suffix=='.npy')
 
     if not filenames:
         pytest.exit(f"No files found to parameterize test: {test_file_dir}", returncode=1)
