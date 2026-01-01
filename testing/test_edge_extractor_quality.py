@@ -87,24 +87,30 @@ def test_filtering_success(filename, sample_videos):
     assert hist[0] == 0, f"Something didn't get filtered properly in {filename}"
 
 
-def test_extraction_quality(filename, sample_videos):
+def test_extraction_quality(request, filename, sample_videos):
     video = sample_videos[filename]
     hist = np.bincount(video.status)
     meas_pct_usbl_frames = hist[1] / np.sum(hist)
     
     expected_value_file = Path(__file__).parent / "reference_values" /  f"expected_value_{filename}.json"
-    if not expected_value_file.is_file():
-        pytest.skip(f"No reference data to compare against for file {filename}")
 
-    with open(expected_value_file) as f:
-        saved_data = json.load(f)
-
-    exp_pct_usbl_frames = saved_data["expected pct useable value"]
-
-    assert math.is_close(
-        meas_pct_usbl_frames, exp_pct_usbl_frames, 0.01
-    ), (
-        f"Extraction rate does not match reference value for {filename}"
-    )
+    key = "expected pct useable value"
+    if request.config.getoption("--update-ref-values"):
+        expected_value_file.unlink(missing_ok=True)
+        new_reference_value_dict = {}
+        new_reference_value_dict[key] = meas_pct_usbl_frames
+        with expected_value_file.open("w") as f:
+            json.dump(new_reference_value_dict, f, indent=2)
+    else:
+        with open(expected_value_file) as f:
+            saved_data = json.load(f)
+    
+        exp_pct_usbl_frames = saved_data[key]
+    
+        assert math.is_close(
+            meas_pct_usbl_frames, exp_pct_usbl_frames, 0.01
+        ), (
+            f"Extraction rate does not match reference value for {filename}"
+        )
 
 
