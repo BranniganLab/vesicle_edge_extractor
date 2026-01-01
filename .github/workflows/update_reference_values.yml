@@ -41,7 +41,8 @@ jobs:
         git checkout -b $BRANCH_NAME
 
     - name: Update reference files
-      run: pytest --update-ref-values
+      run: |
+        python -m pytest ./testing/test_edge_extractor_quality.py --update-ref-values
 
     - name: Commit changes if any
       run: |
