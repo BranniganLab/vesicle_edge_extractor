@@ -159,7 +159,10 @@ class VesicleVideo:
             ax.set_title(f"frame {i} / {self.frames.shape[0]}")
             ax.imshow(self.frames[i], cmap='gray', animated='True')
             if trace:
-                ax.plot(self.x_vals[i], self.y_vals[i])
+                if self.status[i] == 1:
+                    ax.plot(self.x_vals[i], self.y_vals[i], color='tab:green')
+                elif self.status[i] == 3:
+                    ax.plot(self.x_vals[i], self.y_vals[i], color='tab:red')
 
         ani = FuncAnimation(fig, animate, frames=self.frames.shape[0] - 1, interval=150, blit=False, repeat_delay=1000)
         ani.save(output_path)
