@@ -149,7 +149,7 @@ class VesicleVideo:
         """
         if not isinstance(path, Path):
             path = Path(path).resolve()
-        if (trace and not np.isnan(self.x_vals[0]).any()):
+        if (trace and np.isnan(self.x_vals[0]).any()):
             raise ValueError("trace was set to True, but there are no edges detected for this vesicle.")
         output_path = path.with_suffix('.gif')
         fig, ax = plt.subplots()
